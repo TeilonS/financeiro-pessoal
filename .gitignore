@@ -1,0 +1,10 @@
+target/
+data/
+*.log
+.env
+.idea/
+.vscode/
+*.iml
+mvnw.cmd
+.claude/
+_referencia-python/
