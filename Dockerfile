@@ -8,4 +8,4 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/financeiro-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-default}", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Djava.net.preferIPv4Stack=true -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-default} -jar app.jar"]
