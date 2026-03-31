@@ -112,6 +112,13 @@ public class BackupService {
     @Transactional
     @SuppressWarnings("unchecked")
     public Map<String, Object> importar(Map<String, Object> backup) {
+        if (backup == null || backup.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de backup vazio ou inválido");
+        }
+        if (!(backup.get("categorias") instanceof List) && !(backup.get("lancamentos") instanceof List)) {
+            throw new IllegalArgumentException("Estrutura do backup inválida: campos 'categorias' e 'lancamentos' ausentes");
+        }
+
         Usuario usuario = usuarioService.getAutenticado();
 
         Map<String, Object> usuarioData = (Map<String, Object>) backup.get("usuario");
