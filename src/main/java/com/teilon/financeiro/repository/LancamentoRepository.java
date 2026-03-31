@@ -18,6 +18,9 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
     @Query("SELECT l FROM Lancamento l WHERE l.usuario = :usuario AND MONTH(l.data) = :mes AND YEAR(l.data) = :ano")
     List<Lancamento> findAllByUsuarioAndMesAndAno(@Param("usuario") Usuario usuario, @Param("mes") int mes, @Param("ano") int ano);
 
+    @Query("SELECT l FROM Lancamento l WHERE l.usuario = :usuario AND MONTH(l.data) = :mes AND YEAR(l.data) = :ano AND l.tipo = :tipo")
+    List<Lancamento> findAllByUsuarioAndMesAndAnoAndTipo(@Param("usuario") Usuario usuario, @Param("mes") int mes, @Param("ano") int ano, @Param("tipo") TipoTransacao tipo);
+
     List<Lancamento> findAllByUsuarioAndTipo(Usuario usuario, TipoTransacao tipo);
     Optional<Lancamento> findByIdAndUsuario(Long id, Usuario usuario);
 

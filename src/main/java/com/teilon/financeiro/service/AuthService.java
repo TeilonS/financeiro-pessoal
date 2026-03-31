@@ -43,7 +43,8 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.email(), request.senha())
         );
 
-        var usuario = usuarioRepository.findByEmail(request.email()).orElseThrow();
+        var usuario = usuarioRepository.findByEmail(request.email())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Usuário não encontrado"));
         var token = jwtUtil.gerarToken(usuario.getEmail());
         return new AuthResponse(token, usuario.getEmail(), usuario.getNome());
     }

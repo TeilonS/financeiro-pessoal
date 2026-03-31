@@ -46,7 +46,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .headers(h -> h.frameOptions(f -> f.disable())) // necessário para H2 console
+                .headers(h -> h.frameOptions(f -> f.sameOrigin())) // H2 console (dev) usa same-origin iframe
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

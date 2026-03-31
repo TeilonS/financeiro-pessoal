@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +27,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class ExtratoService {
+
+    private static final Logger log = LoggerFactory.getLogger(ExtratoService.class);
 
     private final OfxParser ofxParser;
     private final CsvInterParser csvInterParser;
@@ -222,10 +227,18 @@ public class ExtratoService {
 
     @Transactional
     public void confirmarLote(List<Map<String, Long>> itens) {
+        List<Long> falhas = new ArrayList<>();
         for (Map<String, Long> item : itens) {
             try {
                 confirmar(item.get("id"), new ConfirmarTransacaoRequest(item.get("categoriaId")));
-            } catch (Exception ignored) { /* pula itens inválidos */ }
+            } catch (Exception ex) {
+                Long id = item.get("id");
+                falhas.add(id);
+                log.warn("Falha ao confirmar transação id={}: {}", id, ex.getMessage());
+            }
+        }
+        if (!falhas.isEmpty()) {
+            throw new IllegalStateException("Falha ao confirmar " + falhas.size() + " transação(ões): IDs " + falhas);
         }
     }
 

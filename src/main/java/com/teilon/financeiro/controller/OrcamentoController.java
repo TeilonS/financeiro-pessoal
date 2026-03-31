@@ -28,6 +28,10 @@ public class OrcamentoController {
 
     @PostMapping
     public ResponseEntity<OrcamentoResponse> salvar(@RequestBody Map<String, Object> body) {
+        if (body.get("categoriaId") == null || body.get("mes") == null
+                || body.get("ano") == null || body.get("valorLimite") == null) {
+            throw new IllegalArgumentException("Campos obrigatórios: categoriaId, mes, ano, valorLimite");
+        }
         Long categoriaId = ((Number) body.get("categoriaId")).longValue();
         int mes = ((Number) body.get("mes")).intValue();
         int ano = ((Number) body.get("ano")).intValue();

@@ -29,15 +29,13 @@ public class LancamentoService {
         List<Lancamento> lancamentos;
 
         if (mes != null && ano != null) {
-            lancamentos = lancamentoRepository.findAllByUsuarioAndMesAndAno(usuario, mes, ano);
+            lancamentos = tipo != null
+                    ? lancamentoRepository.findAllByUsuarioAndMesAndAnoAndTipo(usuario, mes, ano, tipo)
+                    : lancamentoRepository.findAllByUsuarioAndMesAndAno(usuario, mes, ano);
         } else {
-            lancamentos = lancamentoRepository.findAllByUsuario(usuario);
-        }
-
-        if (tipo != null) {
-            lancamentos = lancamentos.stream()
-                    .filter(l -> l.getTipo() == tipo)
-                    .toList();
+            lancamentos = tipo != null
+                    ? lancamentoRepository.findAllByUsuarioAndTipo(usuario, tipo)
+                    : lancamentoRepository.findAllByUsuario(usuario);
         }
 
         return lancamentos.stream().map(LancamentoResponse::de).toList();

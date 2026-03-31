@@ -28,6 +28,9 @@ public class CartaoService {
 
     @Transactional
     public CartaoResponse criar(Map<String, Object> body) {
+        if (body.get("nome") == null || body.get("limite") == null || body.get("diaVencimento") == null) {
+            throw new IllegalArgumentException("Campos obrigatórios: nome, limite, diaVencimento");
+        }
         Usuario usuario = usuarioService.getAutenticado();
         CartaoCredito c = CartaoCredito.builder()
                 .nome((String) body.get("nome"))
