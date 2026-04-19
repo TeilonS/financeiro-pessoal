@@ -1,6 +1,7 @@
 package com.teilon.financeiro.controller;
 
 import com.teilon.financeiro.dto.AuthResponse;
+import com.teilon.financeiro.dto.EsqueciSenhaRequest;
 import com.teilon.financeiro.dto.LoginRequest;
 import com.teilon.financeiro.dto.RegisterRequest;
 import com.teilon.financeiro.service.AuthService;
@@ -46,6 +47,13 @@ public class AuthController {
         AuthResponse authResponse = authService.login(request);
         adicionarCookieAuth(response, authResponse.token());
         return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Resetar senha do usuário")
+    public ResponseEntity<Void> esqueciSenha(@Valid @RequestBody EsqueciSenhaRequest request) {
+        authService.esqueciSenha(request.email(), request.novaSenha());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/logout")

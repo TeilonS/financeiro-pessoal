@@ -48,4 +48,12 @@ public class AuthService {
         var token = jwtUtil.gerarToken(usuario.getEmail());
         return new AuthResponse(token, usuario.getEmail(), usuario.getNome());
     }
+
+    public void esqueciSenha(String email, String novaSenha) {
+        var usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Usuário não encontrado"));
+        
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
+    }
 }
