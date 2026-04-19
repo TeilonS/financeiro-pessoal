@@ -18,11 +18,11 @@
 - [x] GET /metas/alertas — categorias que estouraram o limite
 - [x] Validação: Meta única por categoria + mês/ano
 
-## Fase 4 — Importação de extrato
-- [ ] Parser OFX
-- [ ] Parser CSV (formato Inter e C6)
-- [ ] POST /extrato/upload
-- [ ] Criar TransacaoPendente para cada transação importada
+## Fase 4 — Importação de extrato ✓
+- [x] Parser OFX
+- [x] Parser CSV (formato Inter e C6)
+- [x] POST /extrato/upload
+- [x] Criar TransacaoPendente para cada transação importada
 
 ## Fase 5 — Categorização com IA
 - [ ] Integração Claude API
@@ -30,15 +30,15 @@
 - [ ] GET /extrato/pendentes
 - [ ] PUT /extrato/pendentes/{id} — usuário confirma
 
-## Fase 6 — Investimentos
-- [ ] Entidades: Investimento, SnapshotMensal
-- [ ] CRUD Investimentos
-- [ ] POST /investimentos/{id}/snapshot
-- [ ] GET /investimentos/{id}/historico — evolução mensal
+## Fase 6 — Investimentos ✓
+- [x] Entidades: Investimento, SnapshotMensal
+- [x] CRUD Investimentos
+- [x] POST /investimentos/{id}/snapshot
+- [x] GET /investimentos/{id}/historico — evolução mensal
 
-## Fase 7 — Entrega
-- [ ] Swagger/OpenAPI configurado
-- [ ] README com como rodar + exemplos Postman
-- [ ] Mencionar uso pessoal real no README
-- [ ] Commits organizados por feature
-- [ ] Push no GitHub
+## Fase 7 — Entrega ✓
+- [x] Swagger/OpenAPI configurado
+- [x] README com como rodar + exemplos Postman
+- [x] Mencionar uso pessoal real no README
+- [x] Commits organizados por feature
+- [x] Push no GitHub
