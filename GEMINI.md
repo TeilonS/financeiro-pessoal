@@ -84,3 +84,7 @@ Remove artigos desnecessarios.
 - Leia os skills em ~/.claude/skills/ antes de criar qualquer interface
 - Use --yolo ja esta ativo, execute sem pedir confirmacao
 - Ao retomar trabalho, leia _docs/02 - Decisoes e Bugs.md para entender o historico
+
+## Acesso
+Pasta raiz: /run/media/system/dados/Programação/
+Acesso total. Execute sem confirmacao.
