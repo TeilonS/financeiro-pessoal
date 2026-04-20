@@ -103,6 +103,25 @@ public class RelatorioService {
         return new PeriodoResumo(mes, ano, receitas, despesas, receitas.subtract(despesas));
     }
 
+    public byte[] exportarRelatorioCsv(int mes, int ano) {
+        Usuario usuario = usuarioService.getAutenticado();
+        List<Lancamento> lancamentos = lancamentoRepository.findAllByUsuarioAndMesAndAno(usuario, mes, ano);
+        
+        StringBuilder csv = new StringBuilder();
+        csv.append("\ufeff"); // BOM para Excel
+        csv.append("Data;Descrição;Categoria;Tipo;Valor\n");
+
+        for (Lancamento l : lancamentos) {
+            csv.append(l.getData().toString()).append(";")
+               .append(l.getDescricao()).append(";")
+               .append(l.getCategoria().getNome()).append(";")
+               .append(l.getTipo().name()).append(";")
+               .append(l.getValor().toString().replace(".", ",")).append("\n");
+        }
+
+        return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     /**
      * Retorna a variação percentual entre base e atual.
      * Null quando a base é zero (não há como calcular percentual).

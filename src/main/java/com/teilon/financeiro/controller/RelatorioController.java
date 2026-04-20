@@ -57,4 +57,17 @@ public class RelatorioController {
             @RequestParam int anoAnterior) {
         return ResponseEntity.ok(relatorioService.comparativo(mesAtual, anoAtual, mesAnterior, anoAnterior));
     }
+
+    @GetMapping("/exportar.csv")
+    @Operation(summary = "Exportar relatório detalhado em CSV")
+    public ResponseEntity<byte[]> exportarRelatorio(
+            @RequestParam int mes,
+            @RequestParam int ano) {
+        byte[] csv = relatorioService.exportarRelatorioCsv(mes, ano);
+        String filename = "relatorio_" + ano + "_" + String.format("%02d", mes) + ".csv";
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .body(csv);
+    }
 }

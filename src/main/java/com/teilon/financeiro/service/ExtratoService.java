@@ -33,6 +33,8 @@ public class ExtratoService {
     private final OfxParser ofxParser;
     private final CsvInterParser csvInterParser;
     private final CsvC6Parser csvC6Parser;
+    private final CsvNubankParser csvNubankParser;
+    private final CsvItauParser csvItauParser;
     private final CategorizadorAutomatico categorizador;
 
     private final ExtratoBrutoRepository extratoRepository;
@@ -52,6 +54,8 @@ public class ExtratoService {
                 case OFX -> ofxParser.parse(file);
                 case CSV_INTER -> csvInterParser.parse(file);
                 case CSV_C6 -> csvC6Parser.parse(file);
+                case CSV_NUBANK -> csvNubankParser.parse(file);
+                case CSV_ITAU -> csvItauParser.parse(file);
             };
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -277,6 +281,8 @@ public class ExtratoService {
                 case OFX -> ofxParser.parse(file);
                 case CSV_INTER -> csvInterParser.parse(file);
                 case CSV_C6 -> csvC6Parser.parse(file);
+                case CSV_NUBANK -> csvNubankParser.parse(file);
+                case CSV_ITAU -> csvItauParser.parse(file);
             };
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erro ao processar arquivo: " + e.getMessage());
