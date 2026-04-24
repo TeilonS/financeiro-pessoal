@@ -121,6 +121,7 @@ public class LancamentoService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         var breakdown = lancamentos.stream()
+                .filter(l -> l.getCategoria() != null)
                 .collect(Collectors.groupingBy(
                         l -> l.getCategoria().getId(),
                         Collectors.toList()
