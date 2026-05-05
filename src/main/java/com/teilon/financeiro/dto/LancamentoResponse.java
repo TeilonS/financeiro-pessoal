@@ -16,14 +16,15 @@ public record LancamentoResponse(
         String categoriaNome
 ) {
     public static LancamentoResponse de(Lancamento l) {
+        var cat = l.getCategoria();
         return new LancamentoResponse(
                 l.getId(),
                 l.getDescricao(),
                 l.getValor(),
                 l.getData(),
                 l.getTipo(),
-                l.getCategoria().getId(),
-                l.getCategoria().getNome()
+                cat != null ? cat.getId() : null,
+                cat != null ? cat.getNome() : null
         );
     }
 }
