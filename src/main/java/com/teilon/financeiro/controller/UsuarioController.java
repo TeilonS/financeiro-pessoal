@@ -40,7 +40,7 @@ public class UsuarioController {
     public ResponseEntity<Map<String, BigDecimal>> patrimonio() {
         Usuario usuario = usuarioService.getAutenticado();
         BigDecimal reserva = usuarioService.getReservaEmergencia();
-        BigDecimal faturas = cartaoService.totalFaturas();
+        BigDecimal faturas = cartaoService.totalFaturas(usuario);
         BigDecimal investimentos = investimentoService.calcularTotalInvestido(usuario);
         BigDecimal liquido = reserva.add(investimentos).subtract(faturas);
         

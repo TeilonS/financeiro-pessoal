@@ -1,9 +1,12 @@
 package com.teilon.financeiro.controller;
 
 import com.teilon.financeiro.dto.CartaoResponse;
+import com.teilon.financeiro.dto.FaturaRequest;
+import com.teilon.financeiro.dto.FaturaResponse;
 import com.teilon.financeiro.service.CartaoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,5 +42,17 @@ public class CartaoController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         cartaoService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/fatura")
+    public ResponseEntity<Void> registrarFatura(@PathVariable Long id,
+                                                @Valid @RequestBody FaturaRequest req) {
+        cartaoService.registrarFatura(id, req.mes(), req.ano(), req.valor());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/faturas")
+    public List<FaturaResponse> listarFaturas(@PathVariable Long id) {
+        return cartaoService.listarFaturas(id);
     }
 }
