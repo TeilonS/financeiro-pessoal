@@ -21,6 +21,7 @@ public class BackupService {
     private final MetaRepository metaRepository;
     private final OrcamentoMensalRepository orcamentoRepository;
     private final CartaoCreditoRepository cartaoRepository;
+    private final FaturaMensalCartaoRepository faturaRepo;
     private final RecorrenciaRepository recorrenciaRepository;
 
     public Map<String, Object> exportar() {
@@ -71,11 +72,21 @@ public class BackupService {
         List<Map<String, Object>> cartoes = cartaoRepository.findAllByUsuario(usuario).stream()
                 .map(c -> {
                     Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("id", c.getId());
                     m.put("nome", c.getNome());
                     m.put("limite", c.getLimite());
-                    m.put("faturaAtual", c.getFaturaAtual());
                     m.put("diaVencimento", c.getDiaVencimento());
                     m.put("cor", c.getCor());
+                    return m;
+                }).toList();
+
+        List<Map<String, Object>> faturas = faturaRepo.findAllByUsuario(usuario).stream()
+                .map(f -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("cartaoId", f.getCartao().getId());
+                    m.put("mes", f.getMes());
+                    m.put("ano", f.getAno());
+                    m.put("valor", f.getValor());
                     return m;
                 }).toList();
 
@@ -105,6 +116,7 @@ public class BackupService {
         backup.put("metas", metas);
         backup.put("orcamentos", orcamentos);
         backup.put("cartoes", cartoes);
+        backup.put("faturas", faturas);
         backup.put("recorrencias", recorrencias);
         return backup;
     }
@@ -211,15 +223,34 @@ public class BackupService {
         }
 
         List<Map<String, Object>> cartoes = (List<Map<String, Object>>) backup.getOrDefault("cartoes", List.of());
+        Map<Long, Long> cartIdMap = new HashMap<>();
         for (Map<String, Object> c : cartoes) {
-            cartaoRepository.save(CartaoCredito.builder()
+            CartaoCredito saved = cartaoRepository.save(CartaoCredito.builder()
                     .nome((String) c.get("nome"))
                     .limite(toBD(c.get("limite")))
-                    .faturaAtual(toBD(c.getOrDefault("faturaAtual", BigDecimal.ZERO)))
                     .diaVencimento(toInt(c.get("diaVencimento")))
                     .cor((String) c.getOrDefault("cor", "#6366f1"))
                     .usuario(usuario)
                     .build());
+            Long oldId = toLong(c.get("id"));
+            if (oldId != null) cartIdMap.put(oldId, saved.getId());
+        }
+
+        List<Map<String, Object>> faturas = (List<Map<String, Object>>) backup.getOrDefault("faturas", List.of());
+        int faturaCount = 0;
+        for (Map<String, Object> f : faturas) {
+            Long newCartaoId = cartIdMap.get(toLong(f.get("cartaoId")));
+            if (newCartaoId == null) continue;
+            Optional<CartaoCredito> cartao = cartaoRepository.findById(newCartaoId);
+            if (cartao.isEmpty()) continue;
+            faturaRepo.save(FaturaMensalCartao.builder()
+                    .cartao(cartao.get())
+                    .mes(toInt(f.get("mes")))
+                    .ano(toInt(f.get("ano")))
+                    .valor(toBD(f.get("valor")))
+                    .usuario(usuario)
+                    .build());
+            faturaCount++;
         }
 
         List<Map<String, Object>> recorrencias = (List<Map<String, Object>>) backup.getOrDefault("recorrencias", List.of());
@@ -250,6 +281,7 @@ public class BackupService {
                 "metas", metaCount,
                 "orcamentos", orcCount,
                 "cartoes", cartoes.size(),
+                "faturas", faturaCount,
                 "recorrencias", recCount
         );
     }

@@ -19,6 +19,8 @@ public interface FaturaMensalCartaoRepository extends JpaRepository<FaturaMensal
 
     List<FaturaMensalCartao> findByUsuarioAndMesAndAno(Usuario usuario, Integer mes, Integer ano);
 
+    List<FaturaMensalCartao> findAllByUsuario(Usuario usuario);
+
     @Query("""
         SELECT COALESCE(SUM(f.valor), 0) FROM FaturaMensalCartao f
         WHERE f.usuario = :usuario AND f.mes = :mes AND f.ano = :ano
