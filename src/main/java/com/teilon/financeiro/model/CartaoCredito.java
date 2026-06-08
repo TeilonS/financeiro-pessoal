@@ -20,9 +20,6 @@ public class CartaoCredito {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal limite;
 
-    @Column(precision = 15, scale = 2)
-    private BigDecimal faturaAtual;
-
     /** Dia do mês em que vence a fatura (1–31). */
     @Column(nullable = false)
     private Integer diaVencimento;

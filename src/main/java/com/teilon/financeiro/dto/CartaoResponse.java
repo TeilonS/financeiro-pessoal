@@ -6,7 +6,7 @@ public record CartaoResponse(
         Long id,
         String nome,
         BigDecimal limite,
-        BigDecimal faturaAtual,
+        BigDecimal faturaMesAtual,
         Integer diaVencimento,
         String cor,
         BigDecimal limiteDisponivel

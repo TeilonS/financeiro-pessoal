@@ -54,6 +54,23 @@ public class InvestimentoService {
     }
 
     @Transactional
+    public InvestimentoResponse atualizar(Long id, InvestimentoRequest request) {
+        Usuario usuario = usuarioService.getAutenticado();
+        Investimento i = investimentoRepository.findByIdAndUsuario(id, usuario)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Investimento não encontrado"));
+        i.setNome(request.nome());
+        i.setInstituicao(request.instituicao());
+        i.setTipo(request.tipo());
+        Investimento saved = investimentoRepository.save(i);
+        BigDecimal saldo = snapshotRepository.findUltimosSnapshotsPorUsuario(usuario).stream()
+                .filter(s -> s.getInvestimento().getId().equals(saved.getId()))
+                .map(SnapshotMensal::getValor)
+                .findFirst()
+                .orElse(BigDecimal.ZERO);
+        return InvestimentoResponse.of(saved, saldo);
+    }
+
+    @Transactional
     public void deletar(Long id) {
         Usuario usuario = usuarioService.getAutenticado();
         Investimento i = investimentoRepository.findByIdAndUsuario(id, usuario)

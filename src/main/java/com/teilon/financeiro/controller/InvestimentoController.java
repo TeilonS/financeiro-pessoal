@@ -37,6 +37,12 @@ public class InvestimentoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(investimentoService.criar(request));
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar investimento (nome, instituição, tipo)")
+    public InvestimentoResponse atualizar(@PathVariable Long id, @Valid @RequestBody InvestimentoRequest request) {
+        return investimentoService.atualizar(id, request);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Deletar investimento")
