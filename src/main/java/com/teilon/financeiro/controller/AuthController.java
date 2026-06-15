@@ -4,6 +4,7 @@ import com.teilon.financeiro.dto.AuthResponse;
 import com.teilon.financeiro.dto.EsqueciSenhaRequest;
 import com.teilon.financeiro.dto.LoginRequest;
 import com.teilon.financeiro.dto.RegisterRequest;
+import com.teilon.financeiro.dto.ResetSenhaRequest;
 import com.teilon.financeiro.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,9 +51,16 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    @Operation(summary = "Resetar senha do usuário")
+    @Operation(summary = "Solicitar link de recuperação de senha por email")
     public ResponseEntity<Void> esqueciSenha(@Valid @RequestBody EsqueciSenhaRequest request) {
-        authService.esqueciSenha(request.email(), request.novaSenha());
+        authService.solicitarRecuperacaoSenha(request.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Redefinir senha usando token recebido por email")
+    public ResponseEntity<Void> resetarSenha(@Valid @RequestBody ResetSenhaRequest request) {
+        authService.resetarSenha(request.token(), request.novaSenha());
         return ResponseEntity.noContent().build();
     }
 
