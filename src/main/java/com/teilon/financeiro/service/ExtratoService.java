@@ -35,6 +35,9 @@ public class ExtratoService {
     private final CsvC6Parser csvC6Parser;
     private final CsvNubankParser csvNubankParser;
     private final CsvItauParser csvItauParser;
+    private final CsvCaixaParser csvCaixaParser;
+    private final CsvBradescoParser csvBradescoParser;
+    private final CsvBBParser csvBBParser;
     private final CategorizadorAutomatico categorizador;
 
     private final ExtratoBrutoRepository extratoRepository;
@@ -56,6 +59,9 @@ public class ExtratoService {
                 case CSV_C6 -> csvC6Parser.parse(file);
                 case CSV_NUBANK -> csvNubankParser.parse(file);
                 case CSV_ITAU -> csvItauParser.parse(file);
+                case CSV_CAIXA -> csvCaixaParser.parse(file);
+                case CSV_BRADESCO -> csvBradescoParser.parse(file);
+                case CSV_BB -> csvBBParser.parse(file);
             };
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -81,8 +87,23 @@ public class ExtratoService {
         List<Lancamento> autoLancamentos = new ArrayList<>();
 
         for (TransacaoImportada t : importadas) {
-            // Transferência entre contas próprias → ignora completamente
-            if (categorizador.deveIgnorar(t.descricao())) continue;
+            boolean transferencia = categorizador.ehPossivelTransferencia(t.descricao());
+
+            // Possível transferência entre contas próprias → vai para PENDENTE com flag,
+            // sem categoria sugerida, para o usuário decidir confirmar ou ignorar
+            if (transferencia) {
+                todasPendentes.add(TransacaoPendente.builder()
+                        .descricao(t.descricao())
+                        .valor(t.valor())
+                        .data(t.data())
+                        .tipo(t.tipo())
+                        .extrato(extrato)
+                        .usuario(usuario)
+                        .status(StatusTransacao.PENDENTE)
+                        .possivelTransferencia(true)
+                        .build());
+                continue;
+            }
 
             Categoria sugerida = categorizador
                     .sugerir(t.descricao(), t.tipo(), todasCategorias, regrasUsuario)
@@ -109,7 +130,6 @@ public class ExtratoService {
                         .usuario(usuario)
                         .build();
                 autoLancamentos.add(lancamento);
-                // associa após salvar (feito abaixo)
                 todasPendentes.add(pendente);
             } else {
                 todasPendentes.add(pendente);
@@ -283,6 +303,9 @@ public class ExtratoService {
                 case CSV_C6 -> csvC6Parser.parse(file);
                 case CSV_NUBANK -> csvNubankParser.parse(file);
                 case CSV_ITAU -> csvItauParser.parse(file);
+                case CSV_CAIXA -> csvCaixaParser.parse(file);
+                case CSV_BRADESCO -> csvBradescoParser.parse(file);
+                case CSV_BB -> csvBBParser.parse(file);
             };
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erro ao processar arquivo: " + e.getMessage());
@@ -290,14 +313,15 @@ public class ExtratoService {
         List<Categoria> cats = categoriaRepository.findAllByUsuario(usuario);
         List<RegraCategorizacao> regras = regraRepository.findAllByUsuario(usuario);
         return importadas.stream().map(t -> {
-            boolean ignorado = categorizador.deveIgnorar(t.descricao());
-            Categoria sugerida = ignorado ? null :
+            boolean transferencia = categorizador.ehPossivelTransferencia(t.descricao());
+            Categoria sugerida = transferencia ? null :
                     categorizador.sugerir(t.descricao(), t.tipo(), cats, regras).orElse(null);
             return new PreviewItemResponse(
                     t.descricao(), t.valor(), t.data(), t.tipo().name(),
                     sugerida != null ? sugerida.getId() : null,
                     sugerida != null ? sugerida.getNome() : null,
-                    ignorado
+                    false,
+                    transferencia
             );
         }).toList();
     }

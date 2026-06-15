@@ -10,5 +10,6 @@ public record PreviewItemResponse(
         String tipo,
         Long categoriaSugeridaId,
         String categoriaSugeridaNome,
-        boolean ignorado
+        boolean ignorado,
+        boolean possivelTransferencia
 ) {}

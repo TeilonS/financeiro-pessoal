@@ -20,13 +20,11 @@ import java.util.Optional;
 @Component
 public class CategorizadorAutomatico {
 
-    // Palavras que identificam transferência entre contas próprias do usuário → ignorar
+    // Palavras que identificam transferência entre bancos do próprio usuário
+    // ATENÇÃO: nunca incluir nome do usuário — PIX recebido de si mesmo é receita real
     private static final List<String> TRANSFERENCIAS_PROPRIAS = List.of(
-        "teilon oliveira santos",
-        "teilon santos",
-        "c6 bank",        // PIX Inter → C6 aparece como destino "C6 BANK"
-        "banco inter",    // PIX C6 → Inter aparece como destino "BANCO INTER"
-        "transf enviada pix",  // C6: coluna Título quando é transferência interna
+        "c6 bank",               // PIX Inter → C6 aparece como destino "C6 BANK"
+        "banco inter",           // PIX C6 → Inter aparece como destino "BANCO INTER"
         "transferencia entre contas"
     );
 
@@ -105,9 +103,11 @@ public class CategorizadorAutomatico {
     );
 
     /**
-     * Retorna true se a transação é uma transferência entre contas próprias e deve ser ignorada.
+     * Retorna true se a transação parece ser uma transferência entre contas próprias.
+     * Nesse caso o lançamento vai para PENDENTE com flag possivelTransferencia=true
+     * para o usuário decidir se confirma como receita ou ignora.
      */
-    public boolean deveIgnorar(String descricao) {
+    public boolean ehPossivelTransferencia(String descricao) {
         if (descricao == null) return false;
         String desc = normalizar(descricao);
         return TRANSFERENCIAS_PROPRIAS.stream().anyMatch(desc::contains);

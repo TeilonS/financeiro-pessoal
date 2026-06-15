@@ -13,7 +13,8 @@ public record TransacaoPendenteResponse(
         String tipo,
         String status,
         Long categoriaSugeridaId,
-        String categoriaSugeridaNome
+        String categoriaSugeridaNome,
+        boolean possivelTransferencia
 ) {
     public static TransacaoPendenteResponse of(TransacaoPendente t) {
         var cat = t.getCategoriaSugerida();
@@ -25,7 +26,8 @@ public record TransacaoPendenteResponse(
                 t.getTipo().name(),
                 t.getStatus().name(),
                 cat != null ? cat.getId() : null,
-                cat != null ? cat.getNome() : null
+                cat != null ? cat.getNome() : null,
+                t.isPossivelTransferencia()
         );
     }
 }

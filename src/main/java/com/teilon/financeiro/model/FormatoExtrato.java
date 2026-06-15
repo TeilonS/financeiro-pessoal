@@ -5,5 +5,8 @@ public enum FormatoExtrato {
     CSV_INTER,
     CSV_C6,
     CSV_NUBANK,
-    CSV_ITAU
+    CSV_ITAU,
+    CSV_CAIXA,
+    CSV_BRADESCO,
+    CSV_BB
 }

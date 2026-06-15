@@ -47,4 +47,8 @@ public class TransacaoPendente {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_sugerida_id")
     private Categoria categoriaSugerida;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean possivelTransferencia = false;
 }

@@ -53,7 +53,7 @@ public class CsvC6Parser {
         char sep = detectarSeparador(linhas);
 
         boolean cabecalhoEncontrado = false;
-        int colData = -1, colDescricao = -1, colTipo = -1, colValor = -1;
+        int colData = -1, colDescricao = -1, colTitulo = -1, colTipo = -1, colValor = -1;
         int colEntrada = -1, colSaida = -1;
 
         for (String linha : linhas) {
@@ -63,12 +63,13 @@ public class CsvC6Parser {
             String[] cols = splitCsv(linhaStrip, sep);
 
             if (!cabecalhoEncontrado) {
-                // Procura linha de cabeçalho: deve conter "data" E ("valor" OU "descri" OU "entrada")
+                // Procura linha de cabeçalho: deve conter "data" E ("valor" OU "descri" OU "entrada" OU "titulo")
                 boolean temData = false, temValor = false;
                 for (String col : cols) {
                     String c = normalizar(col.trim());
                     if (c.contains("data")) temData = true;
-                    if (c.contains("valor") || c.contains("descri") || c.contains("entrada")) temValor = true;
+                    if (c.contains("valor") || c.contains("descri") || c.contains("entrada")
+                            || c.equals("titulo")) temValor = true;
                 }
                 if (!temData || !temValor) continue;
 
@@ -76,13 +77,17 @@ public class CsvC6Parser {
                 for (int i = 0; i < cols.length; i++) {
                     String c = normalizar(cols[i].trim());
                     if (c.contains("lancamento") || (c.contains("data") && colData < 0)) colData = i;
+                    // "Título" tem prioridade sobre "Descrição" no C6 — contém nome real do pagador/beneficiário
+                    if (c.equals("titulo")) colTitulo = i;
                     if (c.contains("descri")) colDescricao = i;
                     if (c.equals("tipo") || c.contains("operac")) colTipo = i;
                     if (c.equals("valor")) colValor = i;
-                    // Novo formato C6: Entrada(R$) e Saida(R$)
+                    // Formato C6 novo: Entrada(R$) e Saida(R$)
                     if (c.startsWith("entrada")) colEntrada = i;
                     if (c.startsWith("saida")) colSaida = i;
                 }
+                // "Título" tem prioridade: se existe, sobrescreve colDescricao
+                if (colTitulo >= 0) colDescricao = colTitulo;
                 boolean formatoNovo = colEntrada >= 0 && colSaida >= 0;
                 if (colData >= 0 && (colValor >= 0 || formatoNovo)) cabecalhoEncontrado = true;
                 continue;
