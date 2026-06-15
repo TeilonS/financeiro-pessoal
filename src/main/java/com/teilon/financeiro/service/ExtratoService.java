@@ -253,10 +253,18 @@ public class ExtratoService {
     public void confirmarLote(List<Map<String, Long>> itens) {
         List<Long> falhas = new ArrayList<>();
         for (Map<String, Long> item : itens) {
+            Long id = item.get("id");
             try {
-                confirmar(item.get("id"), new ConfirmarTransacaoRequest(item.get("categoriaId")));
+                confirmar(id, new ConfirmarTransacaoRequest(item.get("categoriaId")));
+            } catch (ResponseStatusException ex) {
+                // CONFLICT = já foi confirmada (ex: pelo aprendizado automático de outra do lote) — ok
+                if (ex.getStatusCode() == HttpStatus.CONFLICT) {
+                    log.debug("Transação id={} já confirmada pelo aprendizado automático — ok", id);
+                } else {
+                    falhas.add(id);
+                    log.warn("Falha ao confirmar transação id={}: {}", id, ex.getMessage());
+                }
             } catch (Exception ex) {
-                Long id = item.get("id");
                 falhas.add(id);
                 log.warn("Falha ao confirmar transação id={}: {}", id, ex.getMessage());
             }
