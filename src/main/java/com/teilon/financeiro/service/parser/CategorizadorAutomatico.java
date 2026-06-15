@@ -20,12 +20,30 @@ import java.util.Optional;
 @Component
 public class CategorizadorAutomatico {
 
-    // Palavras que identificam transferência entre bancos do próprio usuário
-    // ATENÇÃO: nunca incluir nome do usuário — PIX recebido de si mesmo é receita real
+    // Palavras que identificam transferência entre contas próprias OU aporte em corretora.
+    // ATENÇÃO: nunca incluir nome do usuário — PIX recebido de si mesmo é receita real.
     private static final List<String> TRANSFERENCIAS_PROPRIAS = List.of(
-        "c6 bank",               // PIX Inter → C6 aparece como destino "C6 BANK"
-        "banco inter",           // PIX C6 → Inter aparece como destino "BANCO INTER"
-        "transferencia entre contas"
+        // Bancos próprios
+        "c6 bank",
+        "banco inter",
+        "transferencia entre contas",
+        // Corretoras — aportes em investimentos não são despesas
+        "nuinvest",
+        "nu invest",
+        "easynvest",
+        "xp investimentos",
+        "xp corretora",
+        "clear corretora",
+        "btg pactual",
+        "rico investimentos",
+        "rico corretora",
+        "inter invest",
+        "modal mais",
+        "toro invest",
+        "warren invest",
+        "agora corretora",
+        "terra investimentos",
+        "genial invest"
     );
 
     // Regras: palavras-chave na descrição → nomes candidatos de categoria (ordem de preferência)

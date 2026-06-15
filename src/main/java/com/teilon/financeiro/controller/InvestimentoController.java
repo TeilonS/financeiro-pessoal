@@ -61,4 +61,11 @@ public class InvestimentoController {
     public List<SnapshotResponse> listarHistorico(@PathVariable Long id) {
         return investimentoService.listarHistorico(id);
     }
+
+    @PostMapping("/atualizar-cotacoes")
+    @Operation(summary = "Buscar preço atual de todos os ativos com ticker cadastrado")
+    public ResponseEntity<Void> atualizarCotacoes() {
+        investimentoService.atualizarCotacoes();
+        return ResponseEntity.noContent().build();
+    }
 }
