@@ -1,5 +1,6 @@
 package com.teilon.financeiro.controller;
 
+import com.teilon.financeiro.dto.AlterarSenhaRequest;
 import com.teilon.financeiro.dto.AuthResponse;
 import com.teilon.financeiro.dto.EsqueciSenhaRequest;
 import com.teilon.financeiro.dto.LoginRequest;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -61,6 +64,15 @@ public class AuthController {
     @Operation(summary = "Redefinir senha usando token recebido por email")
     public ResponseEntity<Void> resetarSenha(@Valid @RequestBody ResetSenhaRequest request) {
         authService.resetarSenha(request.token(), request.novaSenha());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/change-password")
+    @Operation(summary = "Alterar senha do usuário autenticado")
+    public ResponseEntity<Void> alterarSenha(
+            @Valid @RequestBody AlterarSenhaRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        authService.alterarSenha(userDetails.getUsername(), request.senhaAtual(), request.novaSenha());
         return ResponseEntity.noContent().build();
     }
 

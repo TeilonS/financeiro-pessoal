@@ -83,6 +83,18 @@ public class AuthService {
         emailService.enviarEmailRecuperacaoSenha(email, usuario.getNome(), link);
     }
 
+    public void alterarSenha(String emailAutenticado, String senhaAtual, String novaSenha) {
+        var usuario = usuarioRepository.findByEmail(emailAutenticado)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Usuário não encontrado"));
+
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenha())) {
+            throw new IllegalArgumentException("Senha atual incorreta.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
+    }
+
     @Transactional
     public void resetarSenha(String token, String novaSenha) {
         var resetToken = tokenRepository.findByToken(token)
