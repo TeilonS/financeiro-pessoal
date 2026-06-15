@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +30,10 @@ public class CartaoService {
 
     public List<CartaoResponse> listar() {
         Usuario u = usuarioService.getAutenticado();
-        YearMonth m = YearMonth.now();
-        Map<Long, BigDecimal> faturas = faturaRepo
-            .findByUsuarioAndMesAndAno(u, m.getMonthValue(), m.getYear()).stream()
-            .collect(Collectors.toMap(f -> f.getCartao().getId(), FaturaMensalCartao::getValor));
-
         return cartaoRepository.findAllByUsuario(u).stream().map(c -> {
-            BigDecimal fat = faturas.getOrDefault(c.getId(), BigDecimal.ZERO);
+            YearMonth m = mesCompetencia(c.getDiaVencimento());
+            BigDecimal fat = faturaRepo.findByCartaoAndMesAndAno(c, m.getMonthValue(), m.getYear())
+                .map(FaturaMensalCartao::getValor).orElse(BigDecimal.ZERO);
             return new CartaoResponse(c.getId(), c.getNome(), c.getLimite(),
                 fat, c.getDiaVencimento(), c.getCor(), c.getLimite().subtract(fat));
         }).toList();
@@ -69,7 +67,7 @@ public class CartaoService {
         if (body.get("diaVencimento") != null) c.setDiaVencimento(((Number) body.get("diaVencimento")).intValue());
         if (body.get("cor") != null) c.setCor((String) body.get("cor"));
         CartaoCredito saved = cartaoRepository.save(c);
-        YearMonth m = YearMonth.now();
+        YearMonth m = mesCompetencia(saved.getDiaVencimento());
         BigDecimal fat = faturaRepo.findByCartaoAndMesAndAno(saved, m.getMonthValue(), m.getYear())
             .map(FaturaMensalCartao::getValor).orElse(BigDecimal.ZERO);
         return new CartaoResponse(saved.getId(), saved.getNome(), saved.getLimite(),
@@ -108,7 +106,21 @@ public class CartaoService {
     }
 
     public BigDecimal totalFaturas(Usuario usuario) {
-        YearMonth m = YearMonth.now();
-        return faturaRepo.sumByUsuarioAndCompetencia(usuario, m.getMonthValue(), m.getYear());
+        return cartaoRepository.findAllByUsuario(usuario).stream()
+            .map(c -> {
+                YearMonth m = mesCompetencia(c.getDiaVencimento());
+                return faturaRepo.findByCartaoAndMesAndAno(c, m.getMonthValue(), m.getYear())
+                    .map(FaturaMensalCartao::getValor).orElse(BigDecimal.ZERO);
+            })
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** Retorna o mês de competência da fatura aberta para um dado dia de vencimento.
+     *  Se hoje já passou o vencimento deste mês, a fatura em aberto é do próximo mês. */
+    private YearMonth mesCompetencia(int diaVencimento) {
+        LocalDate hoje = LocalDate.now();
+        return hoje.getDayOfMonth() > diaVencimento
+            ? YearMonth.now().plusMonths(1)
+            : YearMonth.now();
     }
 }
