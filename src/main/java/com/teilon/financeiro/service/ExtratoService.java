@@ -29,12 +29,12 @@ import java.util.Map;
 public class ExtratoService {
 
     private static final Logger log = LoggerFactory.getLogger(ExtratoService.class);
+    private static final int CHAVE_MIN_LENGTH = 8;
 
     private final OfxParser ofxParser;
     private final CsvInterParser csvInterParser;
     private final CsvC6Parser csvC6Parser;
     private final CsvNubankParser csvNubankParser;
-    private final CsvItauParser csvItauParser;
     private final CsvCaixaParser csvCaixaParser;
     private final CsvBradescoParser csvBradescoParser;
     private final CsvBBParser csvBBParser;
@@ -58,7 +58,6 @@ public class ExtratoService {
                 case CSV_INTER -> csvInterParser.parse(file);
                 case CSV_C6 -> csvC6Parser.parse(file);
                 case CSV_NUBANK -> csvNubankParser.parse(file);
-                case CSV_ITAU -> csvItauParser.parse(file);
                 case CSV_CAIXA -> csvCaixaParser.parse(file);
                 case CSV_BRADESCO -> csvBradescoParser.parse(file);
                 case CSV_BB -> csvBBParser.parse(file);
@@ -213,15 +212,18 @@ public class ExtratoService {
                         .chave(chave).categoria(categoria).usuario(usuario).build())
             );
 
-            // Aplica a nova regra em todas as pendentes restantes
+            // Aplica a nova regra em todas as pendentes restantes cuja descrição é claramente relacionada.
+            // Exige tamanho mínimo na chave pra não propagar categoria com base em palavra curta/genérica
+            // (ex.: "pix", "compra") que várias transações não relacionadas compartilham.
             List<TransacaoPendente> outrasPendentes = transacaoPendenteRepository
                     .findAllByUsuarioAndStatus(usuario, StatusTransacao.PENDENTE);
 
             List<Lancamento> novosLancamentos = new ArrayList<>();
             for (TransacaoPendente p : outrasPendentes) {
                 if (p.getId().equals(id)) continue;
-                if (!normalizarChave(p.getDescricao()).contains(chave)
-                        && !chave.contains(normalizarChave(p.getDescricao()))) continue;
+                String chaveP = normalizarChave(p.getDescricao());
+                if (chave.length() < CHAVE_MIN_LENGTH || chaveP.length() < CHAVE_MIN_LENGTH) continue;
+                if (!chaveP.contains(chave) && !chave.contains(chaveP)) continue;
 
                 Lancamento l = Lancamento.builder()
                         .descricao(p.getDescricao())
@@ -310,7 +312,6 @@ public class ExtratoService {
                 case CSV_INTER -> csvInterParser.parse(file);
                 case CSV_C6 -> csvC6Parser.parse(file);
                 case CSV_NUBANK -> csvNubankParser.parse(file);
-                case CSV_ITAU -> csvItauParser.parse(file);
                 case CSV_CAIXA -> csvCaixaParser.parse(file);
                 case CSV_BRADESCO -> csvBradescoParser.parse(file);
                 case CSV_BB -> csvBBParser.parse(file);

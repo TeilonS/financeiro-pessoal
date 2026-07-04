@@ -25,7 +25,10 @@ public class CsvNubankParser {
 
     public List<TransacaoImportada> parse(MultipartFile file) throws IOException {
         byte[] bytes = file.getBytes();
-        String conteudo = new String(bytes, StandardCharsets.UTF_8);
+        Charset charset = detectarCharset(bytes);
+        String conteudo = new String(bytes, charset);
+        if (conteudo.startsWith("﻿")) conteudo = conteudo.substring(1);
+
         List<TransacaoImportada> transacoes = new ArrayList<>();
         String[] linhas = conteudo.split("\\r?\\n");
 
@@ -33,7 +36,7 @@ public class CsvNubankParser {
 
         for (String linha : linhas) {
             if (linha.trim().isEmpty()) continue;
-            String[] cols = linha.split(",");
+            String[] cols = splitCsv(linha, ',');
 
             if (!cabecalhoEncontrado) {
                 if (linha.toLowerCase().contains("data") && linha.toLowerCase().contains("valor")) {
@@ -49,7 +52,7 @@ public class CsvNubankParser {
                 BigDecimal valorBruto = new BigDecimal(cols[1].trim());
                 String descricao = cols[3].trim().replace("\"", "");
 
-                TipoTransacao tipo = valorBruto.compareTo(BigDecimal.ZERO) >= 0 
+                TipoTransacao tipo = valorBruto.compareTo(BigDecimal.ZERO) >= 0
                         ? TipoTransacao.RECEITA : TipoTransacao.DESPESA;
 
                 transacoes.add(new TransacaoImportada(descricao, valorBruto.abs(), data, tipo));
@@ -58,5 +61,30 @@ public class CsvNubankParser {
             }
         }
         return transacoes;
+    }
+
+    private String[] splitCsv(String linha, char sep) {
+        List<String> cols = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean inQuote = false;
+        for (char c : linha.toCharArray()) {
+            if (c == '"') { inQuote = !inQuote; }
+            else if (c == sep && !inQuote) { cols.add(sb.toString()); sb = new StringBuilder(); }
+            else sb.append(c);
+        }
+        cols.add(sb.toString());
+        return cols.toArray(new String[0]);
+    }
+
+    private Charset detectarCharset(byte[] bytes) {
+        try {
+            StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+                    .decode(java.nio.ByteBuffer.wrap(bytes));
+            return StandardCharsets.UTF_8;
+        } catch (Exception e) {
+            return StandardCharsets.ISO_8859_1;
+        }
     }
 }

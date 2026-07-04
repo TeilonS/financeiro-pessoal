@@ -47,8 +47,8 @@ public class CartaoService {
         Usuario usuario = usuarioService.getAutenticado();
         CartaoCredito c = CartaoCredito.builder()
                 .nome((String) body.get("nome"))
-                .limite(new BigDecimal(body.get("limite").toString()))
-                .diaVencimento(((Number) body.get("diaVencimento")).intValue())
+                .limite(parseLimite(body.get("limite")))
+                .diaVencimento(parseDiaVencimento(body.get("diaVencimento")))
                 .cor((String) body.getOrDefault("cor", "#6366f1"))
                 .usuario(usuario)
                 .build();
@@ -63,8 +63,8 @@ public class CartaoService {
         CartaoCredito c = cartaoRepository.findByIdAndUsuario(id, usuario)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cartão não encontrado"));
         if (body.get("nome") != null) c.setNome((String) body.get("nome"));
-        if (body.get("limite") != null) c.setLimite(new BigDecimal(body.get("limite").toString()));
-        if (body.get("diaVencimento") != null) c.setDiaVencimento(((Number) body.get("diaVencimento")).intValue());
+        if (body.get("limite") != null) c.setLimite(parseLimite(body.get("limite")));
+        if (body.get("diaVencimento") != null) c.setDiaVencimento(parseDiaVencimento(body.get("diaVencimento")));
         if (body.get("cor") != null) c.setCor((String) body.get("cor"));
         CartaoCredito saved = cartaoRepository.save(c);
         YearMonth m = mesCompetencia(saved.getDiaVencimento());
@@ -113,6 +113,36 @@ public class CartaoService {
                     .map(FaturaMensalCartao::getValor).orElse(BigDecimal.ZERO);
             })
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal parseLimite(Object valor) {
+        BigDecimal limite;
+        try {
+            limite = new BigDecimal(valor.toString());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Limite inválido: " + valor);
+        }
+        if (limite.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Limite deve ser maior que zero");
+        }
+        return limite;
+    }
+
+    private int parseDiaVencimento(Object valor) {
+        int dia;
+        if (valor instanceof Number n) {
+            dia = n.intValue();
+        } else {
+            try {
+                dia = Integer.parseInt(valor.toString());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Dia de vencimento inválido: " + valor);
+            }
+        }
+        if (dia < 1 || dia > 31) {
+            throw new IllegalArgumentException("Dia de vencimento deve estar entre 1 e 31");
+        }
+        return dia;
     }
 
     /** Retorna o mês de competência da fatura aberta para um dado dia de vencimento.

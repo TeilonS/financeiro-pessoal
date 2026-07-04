@@ -30,6 +30,9 @@ public class SecurityConfig {
     @Value("${frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -47,7 +50,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .headers(h -> h.frameOptions(f -> f.sameOrigin())) // H2 console (dev) usa same-origin iframe
+                // H2 console (dev) usa same-origin iframe; em prod (h2 console desabilitado) nega frame por padrão
+                .headers(h -> h.frameOptions(f -> {
+                    if (h2ConsoleEnabled) f.sameOrigin(); else f.deny();
+                }))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

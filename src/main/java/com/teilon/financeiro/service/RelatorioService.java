@@ -112,14 +112,23 @@ public class RelatorioService {
         csv.append("Data;Descrição;Categoria;Tipo;Valor\n");
 
         for (Lancamento l : lancamentos) {
+            String categoriaNome = l.getCategoria() != null ? l.getCategoria().getNome() : "Sem categoria";
             csv.append(l.getData().toString()).append(";")
-               .append(l.getDescricao()).append(";")
-               .append(l.getCategoria().getNome()).append(";")
+               .append(escaparCampoCsv(l.getDescricao())).append(";")
+               .append(escaparCampoCsv(categoriaNome)).append(";")
                .append(l.getTipo().name()).append(";")
                .append(l.getValor().toString().replace(".", ",")).append("\n");
         }
 
         return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String escaparCampoCsv(String valor) {
+        if (valor == null) return "";
+        if (valor.contains(";") || valor.contains("\"") || valor.contains("\n")) {
+            return "\"" + valor.replace("\"", "\"\"") + "\"";
+        }
+        return valor;
     }
 
     /**
