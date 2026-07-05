@@ -16,12 +16,13 @@ import java.util.List;
 /**
  * Parser para extrato CSV do Nubank.
  * Formato esperado: Data,Valor,Identificador,Descrição
- * 2026-03-15,-50.00,id,Compra no Mercado
+ * Aceita datas em yyyy-MM-dd (formato antigo) ou dd/MM/yyyy (formato atual).
  */
 @Component
 public class CsvNubankParser {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FMT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FMT_BR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public List<TransacaoImportada> parse(MultipartFile file) throws IOException {
         byte[] bytes = file.getBytes();
@@ -48,7 +49,7 @@ public class CsvNubankParser {
             if (cols.length < 4) continue;
 
             try {
-                LocalDate data = LocalDate.parse(cols[0].trim(), DATE_FMT);
+                LocalDate data = parseData(cols[0].trim());
                 BigDecimal valorBruto = new BigDecimal(cols[1].trim());
                 String descricao = cols[3].trim().replace("\"", "");
 
@@ -61,6 +62,13 @@ public class CsvNubankParser {
             }
         }
         return transacoes;
+    }
+
+    private LocalDate parseData(String texto) {
+        if (texto.contains("/")) {
+            return LocalDate.parse(texto, DATE_FMT_BR);
+        }
+        return LocalDate.parse(texto, DATE_FMT_ISO);
     }
 
     private String[] splitCsv(String linha, char sep) {
