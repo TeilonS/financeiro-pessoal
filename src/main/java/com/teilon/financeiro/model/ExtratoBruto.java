@@ -18,7 +18,7 @@ public class ExtratoBruto {
     private String nomeArquivo;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(20)")
     private FormatoExtrato formato;
 
     @Column(nullable = false)
