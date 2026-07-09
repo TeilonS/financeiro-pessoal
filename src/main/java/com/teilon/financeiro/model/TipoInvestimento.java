@@ -5,5 +5,6 @@ public enum TipoInvestimento {
     ACOES,
     FII,
     CRYPTO,
+    FUNDOS,
     OUTROS
 }
