@@ -10,4 +10,5 @@ public interface TransacaoPendenteRepository extends JpaRepository<TransacaoPend
     List<TransacaoPendente> findAllByUsuarioAndStatus(Usuario usuario, StatusTransacao status);
     List<TransacaoPendente> findAllByExtrato(ExtratoBruto extrato);
     Optional<TransacaoPendente> findByIdAndUsuario(Long id, Usuario usuario);
+    List<TransacaoPendente> findAllByLancamento(Lancamento lancamento);
 }

@@ -6,6 +6,7 @@ import com.teilon.financeiro.dto.ResumoResponse;
 import com.teilon.financeiro.model.Lancamento;
 import com.teilon.financeiro.model.TipoTransacao;
 import com.teilon.financeiro.repository.LancamentoRepository;
+import com.teilon.financeiro.repository.TransacaoPendenteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class LancamentoService {
     private final LancamentoRepository lancamentoRepository;
     private final CategoriaService categoriaService;
     private final UsuarioService usuarioService;
+    private final TransacaoPendenteRepository transacaoPendenteRepository;
 
     public List<LancamentoResponse> listar(Integer mes, Integer ano, TipoTransacao tipo) {
         var usuario = usuarioService.getAutenticado();
@@ -89,6 +91,11 @@ public class LancamentoService {
         var usuario = usuarioService.getAutenticado();
         var lancamento = lancamentoRepository.findByIdAndUsuario(id, usuario)
                 .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado"));
+
+        var pendentesVinculadas = transacaoPendenteRepository.findAllByLancamento(lancamento);
+        pendentesVinculadas.forEach(p -> p.setLancamento(null));
+        transacaoPendenteRepository.saveAll(pendentesVinculadas);
+
         lancamentoRepository.delete(lancamento);
     }
 
